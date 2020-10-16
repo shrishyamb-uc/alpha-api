@@ -13,6 +13,7 @@ servers:
 paths:
   /app/order:
     get:
+      summary: Single Document Order
       parameters:
         - name: document_id
           in: query
@@ -25,7 +26,7 @@ paths:
             example: DOC_ID_123456358
         - name: timeout
           in: query
-          description: Timeout field need to be used set the timeout of the document download process. Default timeout is set to 30 Sec. If set 0 then webhook id is returned that can be used determine the webhook of document download request.
+          description: Timeout field need to be used set the timeout of the api response. Default timeout is set to 30 Sec. If set 0 then webhook id is returned that can be used determine the webhook of document download request.
           schema:
             type: integer
             format: int32
@@ -42,7 +43,14 @@ paths:
                   document_order:
                     $ref: '#/components/schemas/document_order'
                 nullable: false
-              examples: {}
+              examples:
+                Success Response:
+                  value:
+                    document_order:
+                      webhook_id: stringstri
+                      document_id: stringst
+                      file_link: string
+                      timeout: false
         '400':
           description: ''
           content:
@@ -58,6 +66,36 @@ paths:
     summary: Using this API you can order a single document and will return a document file lnk in case of document download happens with in timeout. If document download takes more time than time out period then you can use webhook id to get the file link to download document.
     description: API to order a single document of a case
   /app/cart:
+    get:
+      summary: ''
+      operationId: getCart
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cart'
+              examples:
+                example-1:
+                  value:
+                    cart:
+                      amount: 200
+                      count: 0
+                      cart_hash: string
+                      documents:
+                        - document:
+                            document_id: string
+                            cost: 0
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      description: View all cart documents
+      security:
+        - api_key: []
     post:
       requestBody:
         content:
@@ -108,7 +146,7 @@ paths:
                     message: string
       operationId: addDocumentToCart
       description: API to add the list of document to the cart.
-    summary: Bulk document order API
+    summary: Add documents to cart
     description: This API allows bulk document order API with cart system.
     delete:
       summary: ''
@@ -129,38 +167,8 @@ paths:
                     message: string
       description: Delete all the document from Cart
       security:
-        - name: []
-      parameters: []
-    get:
-      summary: ''
-      operationId: getCart
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/cart'
-              examples:
-                example-1:
-                  value:
-                    cart:
-                      amount: 200
-                      count: 0
-                      cart_hash: string
-                      documents:
-                        - document:
-                            document_id: string
-                            cost: 0
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-      description: View all cart documents
-      security:
         - api_key: []
+      parameters: []
   '/app/cart/{document_id}':
     parameters:
       - schema:
