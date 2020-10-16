@@ -1,0 +1,355 @@
+openapi: 3.0.2
+info:
+  title: APP APIs
+  description: APP APIs
+  termsOfService: 'https://unicourt.com/terms-of-service'
+  contact:
+    name: UniCourt Support
+    url: 'https://unicourt.com/developer-hub'
+    email: support@unicourt.com
+  version: V2
+servers:
+  - url: 'https://api.unicourt.com'
+paths:
+  /app/order:
+    get:
+      parameters:
+        - name: document_id
+          in: query
+          description: Unique ID of the case document.
+          required: true
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 255
+            example: DOC_ID_123456358
+        - name: timeout
+          in: query
+          description: Timeout field need to be used set the timeout of the document download process. Default timeout is set to 30 Sec. If set 0 then webhook id is returned that can be used determine the webhook of document download request.
+          schema:
+            type: integer
+            format: int32
+            default: 30
+            example: 0
+      responses:
+        '200':
+          description: Single Document Order Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document_order:
+                    $ref: '#/components/schemas/document_order'
+                nullable: false
+              examples: {}
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    $ref: '#/components/schemas/error'
+                nullable: false
+      operationId: singleDocumentOrder
+      description: Single Document Order
+    summary: Using this API you can order a single document and will return a document file lnk in case of document download happens with in timeout. If document download takes more time than time out period then you can use webhook id to get the file link to download document.
+    description: API to order a single document of a case
+  /app/cart:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                document_ids:
+                  $ref: '#/components/schemas/document_ids'
+              nullable: false
+            examples:
+              Request Body:
+                value:
+                  document_ids:
+                    - DOC_ID_12452545
+                    - DOC_ID_21566689
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: 200 status Response
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cart'
+              examples:
+                Cart API success response:
+                  value:
+                    cart:
+                      amount: 200
+                      count: 0
+                      cart_hash: string
+                      documents:
+                        - document:
+                            document_id: string
+                            cost: 50
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              examples:
+                example-1:
+                  value:
+                    code: INVOICE_ERROR
+                    message: string
+      operationId: addDocumentToCart
+      description: API to add the list of document to the cart.
+    summary: Bulk document order API
+    description: This API allows bulk document order API with cart system.
+    delete:
+      summary: ''
+      operationId: deleteAllDocumentFromCart
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              examples:
+                example-1:
+                  value:
+                    code: INVOICE_ERROR
+                    message: string
+      description: Delete all the document from Cart
+      security:
+        - name: []
+      parameters: []
+    get:
+      summary: ''
+      operationId: getCart
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cart'
+              examples:
+                example-1:
+                  value:
+                    cart:
+                      amount: 200
+                      count: 0
+                      cart_hash: string
+                      documents:
+                        - document:
+                            document_id: string
+                            cost: 0
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      description: View all cart documents
+      security:
+        - api_key: []
+  '/app/cart/{document_id}':
+    parameters:
+      - schema:
+          type: string
+        name: document_id
+        in: path
+        required: true
+        description: Document ID
+    delete:
+      summary: ''
+      operationId: deleteDocumentFromCart
+      responses:
+        '200':
+          description: OK
+          headers: {}
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      description: Delete all the document from Cart
+      security:
+        - api_key: []
+  /app/cart/order:
+    post:
+      summary: ''
+      operationId: orderCartDocuments
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/order'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      security:
+        - api_key: []
+      description: order Cart Documents
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cart_hash:
+                  type: string
+        description: Order confirm with cart hash
+  /app/track-case:
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+      operationId: getTrackCase
+      security:
+        - api_key: []
+components:
+  schemas:
+    document_order:
+      type: object
+      required:
+        - webhook_id
+        - document_id
+      properties:
+        webhook_id:
+          type: string
+          description: Webhook ID is the unique id can be used to map the request and the webhook notification
+          minLength: 10
+          maxLength: 10
+        document_id:
+          type: string
+          description: Unique ID of the case document
+          minLength: 8
+          maxLength: 255
+        file_link:
+          type: string
+          description: Signed URL of the document
+        timeout:
+          type: boolean
+          example: false
+      nullable: false
+      title: ''
+      description: ''
+    error:
+      type: object
+      minProperties: 2
+      maxProperties: 2
+      nullable: false
+      x-examples: {}
+      properties:
+        code:
+          type: string
+          description: Different code for error
+          enum:
+            - PACER_CREDENTIAL_NOT_SET
+            - INVOICE_ERROR
+            - COST_ERROR
+            - DOCUMENT_UNAVAILABLE
+            - DOCUMENT_ALREADY_IN_CART
+            - CART_LIMIT_REACHED
+          example: INVOICE_ERROR
+        message:
+          type: string
+          description: Error message that describes the error code.
+    document_ids:
+      type: array
+      items:
+        type: string
+        description: List of document ids to add it to cart for document order.
+        minItems: 1
+        maxItems: 20
+        example: DOC_ID_12452545
+      nullable: false
+    cart:
+      title: cart
+      type: object
+      x-examples: {}
+      description: Cart Object
+      properties:
+        cart:
+          type: object
+          description: Cart Object
+          required:
+            - amount
+            - count
+            - cart_hash
+            - documents
+          properties:
+            amount:
+              type: number
+              example: 200
+              description: Total
+              format: float
+            count:
+              type: integer
+            cart_hash:
+              type: string
+            documents:
+              type: array
+              items:
+                type: object
+                properties:
+                  document:
+                    type: object
+                    required:
+                      - document_id
+                      - cost
+                    properties:
+                      document_id:
+                        type: string
+                      cost:
+                        type: number
+                        format: float
+                        example: 50
+                required:
+                  - document
+      required:
+        - cart
+    order:
+      title: order
+      type: object
+      properties:
+        order:
+          type: object
+          required:
+            - message
+            - amount
+            - webhook_id
+          properties:
+            message:
+              type: string
+            amount:
+              type: number
+              format: float
+              example: 200
+            webhook_id:
+              type: string
+      required:
+        - order
+  securitySchemes:
+    api_key:
+      name: api_key
+      type: apiKey
+      in: header
+security: []
