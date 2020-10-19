@@ -1,4 +1,9 @@
 openapi: 3.0.2
+tags:
+  - name: Single Document Order
+  - name: Multiple Document Order
+  - name: Track Case
+  - name: usage
 info:
   title: APP APIs
   description: APP APIs
@@ -14,6 +19,8 @@ paths:
   /app/order:
     get:
       summary: Single Document Order
+      tags:
+        - Single Document Order
       parameters:
         - name: document_id
           in: query
@@ -63,11 +70,15 @@ paths:
                 nullable: false
       operationId: singleDocumentOrder
       description: Single Document Order
+      security:
+        - api_key: []
     summary: Using this API you can order a single document and will return a document file lnk in case of document download happens with in timeout. If document download takes more time than time out period then you can use webhook id to get the file link to download document.
     description: API to order a single document of a case
   /app/cart:
     get:
       summary: ''
+      tags:
+        - Multiple Document Order
       operationId: getCart
       responses:
         '200':
@@ -97,6 +108,8 @@ paths:
       security:
         - api_key: []
     post:
+      tags:
+        - Multiple Document Order
       requestBody:
         content:
           application/json:
@@ -150,6 +163,8 @@ paths:
     description: This API allows bulk document order API with cart system.
     delete:
       summary: ''
+      tags:
+        - Multiple Document Order
       operationId: deleteAllDocumentFromCart
       responses:
         '200':
@@ -179,6 +194,8 @@ paths:
         description: Document ID
     delete:
       summary: ''
+      tags:
+        - Multiple Document Order
       operationId: deleteDocumentFromCart
       responses:
         '200':
@@ -196,6 +213,8 @@ paths:
   /app/cart/order:
     post:
       summary: ''
+      tags:
+        - Multiple Document Order
       operationId: orderCartDocuments
       responses:
         '200':
@@ -224,14 +243,178 @@ paths:
         description: Order confirm with cart hash
   /app/track-case:
     get:
+      summary: Get Tracked Cases API
+      tags:
+        - Track Case
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/track_cases'
+      operationId: getTrackCase
+      security:
+        - api_key: []
+      description: List all the tracked cases in an account.
+    put:
+      summary: Add or update tack case
+      tags:
+        - Track Case
+      operationId: addOrUpdateTrackCase
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/track_case'
+              examples: {}
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              examples: {}
+      description: Add or update track case
+      security:
+        - api_key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/track_case'
+        description: ''
+  '/app/track-case/{case_id}':
+    parameters:
+      - schema:
+          type: string
+        name: case_id
+        in: path
+        required: true
+    get:
+      summary: Track Case Status of a Case
+      description: Track Case Status of a Case
+      tags:
+        - Track Case
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/track_case'
+              examples: {}
+      operationId: gettrackCaseForCase
+    delete:
+      summary: Remove the case from track schedule
+      tags:
+        - Track Case
+      operationId: removeTrackCase
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      description: Remove the case from track schedule
+      security:
+        - api_key: []
+  /app/usage:
+    get:
+      summary: APP usage
+      tags:
+        - usage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/usage'
+      operationId: getAppUsage
+      description: Get APP Usage of current Month
+      security:
+        - api_key: []
+  '/app/usage/{yyyy-mm}':
+    parameters:
+      - schema:
+          type: string
+        name: yyyy-mm
+        in: path
+        required: true
+    get:
+      summary: APP usage
+      tags:
+        - usage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/usage'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      operationId: getAppUsageForYearMonth
+      description: Get the Usage for a specified Year and Month
+      security:
+        - api_key: []
+  /app/webhook:
+    get:
       summary: Your GET endpoint
       tags: []
       responses:
         '200':
           description: OK
-      operationId: getTrackCase
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhooks'
+      operationId: getAppWebhook
+      description: Get all recent webhook data
       security:
         - api_key: []
+      parameters:
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: date
+          description: ''
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: date_after
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: date_before
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: expiry
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: expiry_before
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: expiry_after
 components:
   schemas:
     document_order:
@@ -355,6 +538,83 @@ components:
               type: string
       required:
         - order
+    track_cases:
+      title: track_cases
+      type: object
+      description: Track Cases
+      properties:
+        total_cases:
+          type: integer
+        page:
+          type: integer
+        track_cases:
+          type: array
+          items:
+            $ref: '#/components/schemas/track_case'
+        next_page:
+          type: string
+          nullable: true
+    track_case:
+      title: track_case
+      type: object
+      description: Track Case
+      properties:
+        track_case:
+          type: object
+          required:
+            - case_id
+            - schedule
+          properties:
+            case_id:
+              type: string
+            schedule:
+              type: string
+      required:
+        - track_case
+    usage:
+      type: object
+      properties:
+        usage:
+          type: object
+          properties:
+            start_date:
+              type: string
+            end_date:
+              type: string
+            case:
+              type: integer
+            update_case:
+              type: integer
+            document_order:
+              type: integer
+    webhooks:
+      title: webhooks
+      type: object
+      properties:
+        id:
+          type: object
+          properties:
+            case_webhook:
+              type: object
+              properties:
+                count:
+                  type: integer
+                link:
+                  type: string
+            document_order_webhook:
+              type: object
+              properties:
+                count:
+                  type: integer
+                link:
+                  type: string
+            x_webhook:
+              type: object
+              properties:
+                count:
+                  type: integer
+                link:
+                  type: string
   securitySchemes:
     api_key:
       name: api_key
