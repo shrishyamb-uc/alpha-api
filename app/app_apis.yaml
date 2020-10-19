@@ -348,7 +348,7 @@ paths:
         in: path
         required: true
     get:
-      summary: APP usage
+      summary: Usage
       tags:
         - usage
       responses:
