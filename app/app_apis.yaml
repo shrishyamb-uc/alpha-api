@@ -4,6 +4,8 @@ tags:
   - name: Multiple Document Order
   - name: Track Case
   - name: usage
+  - name: App Webhook
+  - name: App Webhook Settings
 info:
   title: APP APIs
   description: APP APIs
@@ -33,7 +35,7 @@ paths:
             example: DOC_ID_123456358
         - name: timeout
           in: query
-          description: Timeout field need to be used set the timeout of the api response. Default timeout is set to 30 Sec. If set 0 then webhook id is returned that can be used determine the webhook of document download request.
+          description: Indicates the time to be taken for responding to this API request. If set 0 then api request will be reponseded immediately.
           schema:
             type: integer
             format: int32
@@ -68,18 +70,48 @@ paths:
                   error:
                     $ref: '#/components/schemas/error'
                 nullable: false
-      operationId: singleDocumentOrder
-      description: Single Document Order
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '503':
+          description: Service Maintenance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      operationId: getSingleDocumentOrder
+      description: This API can be used to get the single document file from Court
       security:
         - api_key: []
     summary: Using this API you can order a single document and will return a document file lnk in case of document download happens with in timeout. If document download takes more time than time out period then you can use webhook id to get the file link to download document.
     description: API to order a single document of a case
   /app/cart:
     get:
-      summary: ''
+      summary: View document list added in cart
       tags:
         - Multiple Document Order
-      operationId: getCart
+      operationId: getDocumentsFromCart
       responses:
         '200':
           description: OK
@@ -88,7 +120,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/cart'
               examples:
-                example-1:
+                Success Response:
                   value:
                     cart:
                       amount: 200
@@ -104,10 +136,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '503':
+          description: Service Maintenance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
       description: View all cart documents
       security:
         - api_key: []
     post:
+      summary: Add documents to cart
       tags:
         - Multiple Document Order
       requestBody:
@@ -158,14 +221,14 @@ paths:
                     code: INVOICE_ERROR
                     message: string
       operationId: addDocumentToCart
-      description: API to add the list of document to the cart.
+      description: This API can be used to add the documents into the Cart
     summary: Add documents to cart
     description: This API allows bulk document order API with cart system.
     delete:
-      summary: ''
+      summary: Remove all documents from cart
       tags:
         - Multiple Document Order
-      operationId: deleteAllDocumentFromCart
+      operationId: deleteAllDocumentsFromCart
       responses:
         '200':
           description: OK
@@ -180,7 +243,37 @@ paths:
                   value:
                     code: INVOICE_ERROR
                     message: string
-      description: Delete all the document from Cart
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '503':
+          description: Service Maintenance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      description: This API can be used to clear all the documents from Cart.
       security:
         - api_key: []
       parameters: []
@@ -193,26 +286,55 @@ paths:
         required: true
         description: Document ID
     delete:
-      summary: ''
+      summary: Remove a document from the cart
       tags:
         - Multiple Document Order
       operationId: deleteDocumentFromCart
       responses:
         '200':
-          description: OK
-          headers: {}
+          description: Ok
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-      description: Delete all the document from Cart
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '503':
+          description: Service Maintenance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      description: This API can be used to delete a document from the cart
       security:
         - api_key: []
   /app/cart/order:
     post:
-      summary: ''
+      summary: Order documents present in cart
       tags:
         - Multiple Document Order
       operationId: orderCartDocuments
@@ -231,7 +353,7 @@ paths:
                 $ref: '#/components/schemas/error'
       security:
         - api_key: []
-      description: order Cart Documents
+      description: Order Documents present in Cart
       requestBody:
         content:
           application/json:
@@ -348,7 +470,7 @@ paths:
         in: path
         required: true
     get:
-      summary: Usage
+      summary: APP usage
       tags:
         - usage
       responses:
@@ -370,15 +492,16 @@ paths:
         - api_key: []
   /app/webhook:
     get:
-      summary: Your GET endpoint
-      tags: []
+      summary: Get App Webhook data
+      tags:
+        - App Webhook
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/webhooks'
+                $ref: '#/components/schemas/webhooks_metadata'
       operationId: getAppWebhook
       description: Get all recent webhook data
       security:
@@ -415,6 +538,110 @@ paths:
             format: date
           in: query
           name: expiry_after
+  '/app/webhook/{webhook_type}':
+    parameters:
+      - schema:
+          type: string
+        name: webhook_type
+        in: path
+        required: true
+    get:
+      summary: Get webhook data by webhook type
+      tags:
+        - App Webhook
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhooks'
+              examples: {}
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              examples: {}
+      operationId: getWebhookDataForWebhookType
+      description: Get webhook data for webhook type
+      security:
+        - api_key: []
+      parameters:
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: date
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: date_before
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: date_after
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: expiry
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: expiry_before
+        - schema:
+            type: string
+            format: date
+          in: query
+          name: expiry_after
+        - schema:
+            type: integer
+          in: query
+          name: page_number
+  /app/webhook/settings:
+    get:
+      summary: Get App Webhook Settings
+      tags:
+        - App Webhook Settings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook_settings'
+      operationId: getAppWebhookSettings
+      security:
+        - api_key: []
+      description: Get APP Webhook Settings
+    put:
+      summary: Update App Webhook Settings
+      tags:
+        - App Webhook Settings
+      operationId: updateAppWebhookSettings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook_settings'
+              examples: {}
+      description: Update APP webhook settings
+      security:
+        - api_key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/webhook_setting'
+            examples: {}
+        description: Update webhook setting
 components:
   schemas:
     document_order:
@@ -449,20 +676,24 @@ components:
       nullable: false
       x-examples: {}
       properties:
-        code:
-          type: string
-          description: Different code for error
-          enum:
-            - PACER_CREDENTIAL_NOT_SET
-            - INVOICE_ERROR
-            - COST_ERROR
-            - DOCUMENT_UNAVAILABLE
-            - DOCUMENT_ALREADY_IN_CART
-            - CART_LIMIT_REACHED
-          example: INVOICE_ERROR
-        message:
-          type: string
-          description: Error message that describes the error code.
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Different code for error
+              enum:
+                - PACER_CREDENTIAL_NOT_SET
+                - INVOICE_ERROR
+                - COST_ERROR
+                - DOCUMENT_UNAVAILABLE
+                - DOCUMENT_ALREADY_IN_CART
+                - CART_LIMIT_REACHED
+                - GENERIC
+              example: GENERIC
+            message:
+              type: string
+              description: Error message that describes the error code.
     document_ids:
       type: array
       items:
@@ -490,12 +721,14 @@ components:
             amount:
               type: number
               example: 200
-              description: Total
+              description: Total amount to be paid for document order present in cart
               format: float
             count:
               type: integer
+              description: Unique cart hash that need to be passed during document order checkout
             cart_hash:
               type: string
+              description: Unique cart has that is generated for document order
             documents:
               type: array
               items:
@@ -587,8 +820,8 @@ components:
               type: integer
             document_order:
               type: integer
-    webhooks:
-      title: webhooks
+    webhooks_metadata:
+      title: webhooks metadata
       type: object
       properties:
         id:
@@ -614,6 +847,106 @@ components:
                 count:
                   type: integer
                 link:
+                  type: string
+    webhooks:
+      title: webhooks
+      type: object
+      x-examples: {}
+      properties:
+        total:
+          type: integer
+        count:
+          type: integer
+        page_number:
+          type: integer
+        webhooks:
+          type: array
+          items:
+            type: object
+            properties:
+              webhook_type:
+                type: object
+                properties:
+                  date:
+                    type: string
+                  expiry:
+                    type: string
+                  webhook_id:
+                    type: string
+                  case_id:
+                    type: string
+                  document_id:
+                    type: string
+                  file_link:
+                    type: string
+        next_page:
+          type: string
+      description: Webhook data model for particular type
+    webhook_settings:
+      title: webhook_settings
+      type: object
+      properties:
+        webhook_settings:
+          type: object
+          properties:
+            default:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                url:
+                  type: string
+                http_basic_auth:
+                  type: string
+                notify_email:
+                  type: string
+            case_webhook:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+            document_order_webhook:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+            x_webhook:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                url:
+                  type: string
+                http_basic_auth:
+                  type: string
+                notify_email:
+                  type: string
+            track_case_webhook:
+              type: object
+              properties:
+                one_per_schedule:
+                  type: boolean
+                enabled:
+                  type: boolean
+                url:
+                  nullable: true
+    webhook_setting:
+      title: webhook_setting
+      type: object
+      properties:
+        webhook_settings:
+          type: object
+          properties:
+            update_case_webhook:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                url:
+                  type: string
+                http_basic_auth:
+                  type: string
+                notify_email:
                   type: string
   securitySchemes:
     api_key:
